@@ -59,7 +59,7 @@ stages:
 
           - task: AWSCLI@1
             inputs:
-              awsCredentials: 'AWS_SERVICE_CONNECTION'
+              awsCredentials: 'AWS_S3_CONNECTION'
               regionName: '$(AWS_REGION)'
               awsCommand: 's3'
               awsSubCommand: 'sync'
