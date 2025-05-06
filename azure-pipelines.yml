@@ -1,0 +1,67 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - name: 'AWS_S3_BUCKET'
+    value: 'amplify-plazoletapragma-dev-1f651-deployment'
+  - name: 'AWS_REGION'
+    value: 'us-east-1'  # Reemplaza con tu región de AWS
+
+stages:
+  - stage: Build
+    displayName: 'Build Angular App'
+    jobs:
+      - job: BuildJob
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '18.x'
+            displayName: 'Instalar Node.js'
+
+          - script: |
+              npm install -g @angular/cli
+              npm install
+            displayName: 'Instalar dependencias'
+
+          - script: |
+              ng build --configuration production
+            displayName: 'Compilar aplicación Angular'
+
+          - task: CopyFiles@2
+            inputs:
+              sourceFolder: 'dist'  # Carpeta donde Angular genera los archivos compilados
+              contents: '**'
+              targetFolder: '$(Build.ArtifactStagingDirectory)'
+            displayName: 'Copiar archivos compilados'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: '$(Build.ArtifactStagingDirectory)'
+              artifactName: 'angular-app'
+            displayName: 'Publicar artefactos'
+
+  - stage: Deploy
+    displayName: 'Deploy to AWS S3'
+    dependsOn: Build
+    jobs:
+      - job: DeployJob
+        steps:
+          - task: DownloadBuildArtifacts@1
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'angular-app'
+              downloadPath: '$(System.ArtifactsDirectory)'
+            displayName: 'Descargar artefactos'
+
+          - task: AWSCLI@1
+            inputs:
+              awsCredentials: 'AWS_SERVICE_CONNECTION'
+              regionName: '$(AWS_REGION)'
+              awsCommand: 's3'
+              awsSubCommand: 'sync'
+              awsArguments: '$(System.ArtifactsDirectory)/angular-app s3://$(AWS_S3_BUCKET) --delete'
+            displayName: 'Desplegar a S3'
