@@ -1,0 +1,54 @@
+
+<div class="auth-page">
+  <div class="auth-container">
+    <div class="auth-image">
+      <div class="overlay"></div>
+    </div>
+    <div class="auth-form-container">
+      <div class="auth-form">
+        <div class="auth-header">
+          <h1>¡Bienvenido de vuelta!</h1>
+          <p>Inicia sesión para ordenar tus platos favoritos</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+          <div class="form-group">
+            <label for="username">Correo electrónico</label>
+            <div class="input-with-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              <input type="email" id="username" formControlName="username" placeholder="tu@email.com" required>
+            </div>
+            <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" class="error-text">
+              Por favor ingresa un correo electrónico válido
+            </div>
+          </div>
+
+          <div class="form-group">
+            <!-- <div class="label-row"> -->
+              <label for="password">Contraseña</label>
+              <!-- <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a> -->
+            <!-- </div> -->
+            <div class="input-with-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              <input type="password" id="password" formControlName="password" placeholder="••••••••" required>
+            </div>
+          </div>
+
+          <button type="submit" [disabled]="loginForm.invalid || isLoading" class="auth-button">
+            <span *ngIf="!isLoading">Iniciar Sesión</span>
+            <div *ngIf="isLoading" class="spinner"></div>
+          </button>
+        </form>
+
+        <div *ngIf="errorMessage" class="error-message">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          {{ errorMessage }}
+        </div>
+
+        <div class="auth-footer">
+          <p>¿No tienes una cuenta? <a routerLink="/signup" class="signup-link">Regístrate ahora</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

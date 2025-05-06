@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-plazoletapragma-dev-1f651-authRole",
+      "UnauthRoleArn": "arn:aws:iam::509001327407:role/amplify-plazoletapragma-dev-1f651-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::509001327407:role/amplify-plazoletapragma-dev-1f651-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-plazoletapragma-dev-1f651-deployment",
+      "UnauthRoleName": "amplify-plazoletapragma-dev-1f651-unauthRole",
+      "StackName": "amplify-plazoletapragma-dev-1f651",
+      "StackId": "arn:aws:cloudformation:us-east-1:509001327407:stack/amplify-plazoletapragma-dev-1f651/73b85510-2953-11f0-8a91-126ce0da93e1",
+      "AmplifyAppId": "d27qbk60ryd7a1"
+    },
+    "categories": {
+      "auth": {
+        "plazoletapragma4d76c876": {}
+      }
+    }
+  }
+}

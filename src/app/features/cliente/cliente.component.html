@@ -1,0 +1,253 @@
+<div class="cliente-dashboard">
+  <!-- Barra de búsqueda y filtros -->
+  <section class="search-section">
+    <div class="search-container">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Buscar restaurantes..." [(ngModel)]="searchTerm">
+    </div>
+
+    <div class="categories-filter">
+      <button [ngClass]="{'active': selectedCategory === 'all'}" (click)="selectedCategory = 'all'">
+        Todos
+      </button>
+      <button *ngFor="let category of categories" [ngClass]="{'active': selectedCategory === category.id}" (click)="selectedCategory = category.id">
+        <span class="category-icon">{{category.icon}}</span>
+        {{category.name}}
+      </button>
+    </div>
+  </section>
+
+  <!-- Vista de restaurantes -->
+  <section *ngIf="!selectedRestaurant" class="restaurants-section">
+    <h2>Restaurantes Disponibles</h2>
+
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando restaurantes...</p>
+    </div>
+
+    <div *ngIf="!isLoading && getFilteredRestaurants().length === 0" class="empty-state">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+      <h3>No se encontraron restaurantes</h3>
+      <p>Intenta con otra búsqueda o categoría.</p>
+    </div>
+
+    <div class="restaurants-grid">
+      <div *ngFor="let restaurant of getFilteredRestaurants()" class="restaurant-card" (click)="viewRestaurant(restaurant)">
+        <div class="restaurant-image" [style.background-image]="'url(' + restaurant.image + ')'">
+          <div class="restaurant-rating">
+            {{restaurant.rating}}
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFD700" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+        </div>
+        <div class="restaurant-info">
+          <h3>{{restaurant.name}}</h3>
+          <p class="restaurant-categories">
+            <span *ngFor="let catId of restaurant.categories">
+              {{getCategoryName(catId)}}
+            </span>
+          </p>
+          <div class="restaurant-meta">
+            <span class="delivery-time">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              {{restaurant.deliveryTime}}
+            </span>
+            <span class="delivery-fee">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              ${{restaurant.deliveryFee.toLocaleString()}}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vista de detalle de restaurante -->
+  <section *ngIf="selectedRestaurant" class="restaurant-detail">
+    <div class="detail-header">
+      <button class="back-button" (click)="backToRestaurants()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Volver a restaurantes
+      </button>
+
+      <div class="restaurant-banner" [style.background-image]="'url(' + selectedRestaurant.image + ')'">
+        <div class="banner-overlay"></div>
+        <div class="restaurant-banner-info">
+          <h1>{{selectedRestaurant.name}}</h1>
+          <div class="banner-meta">
+            <span class="banner-rating">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFD700" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              {{selectedRestaurant.rating}}
+            </span>
+            <span class="banner-delivery">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              {{selectedRestaurant.deliveryTime}}
+            </span>
+            <span class="banner-fee">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              Envío: ${{selectedRestaurant.deliveryFee.toLocaleString()}}
+            </span>
+            <span class="banner-categories">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span *ngFor="let catId of selectedRestaurant.categories">
+                {{getCategoryName(catId)}}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <h2>Menú</h2>
+      <div class="menu-grid">
+        <div *ngFor="let item of selectedRestaurant.menu" class="menu-item">
+          <div class="menu-item-image" [style.background-image]="'url(' + item.image + ')'"></div>
+          <div class="menu-item-info">
+            <h3>{{item.name}}</h3>
+            <p class="menu-item-description">{{item.description}}</p>
+            <div class="menu-item-footer">
+              <span class="menu-item-price">${{item.price.toLocaleString()}}</span>
+              <button class="add-to-cart-button" (click)="addToCart(item); $event.stopPropagation()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Agregar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pedidos activos -->
+  <section *ngIf="!selectedRestaurant && activeOrders.length > 0" class="active-orders-section">
+    <h2>Pedidos Activos</h2>
+    <div class="active-orders-grid">
+      <div *ngFor="let order of activeOrders" class="active-order-card">
+        <div class="order-status-badge" [ngClass]="{
+          'status-pending': order.status === 'pending',
+          'status-in-progress': order.status === 'in-progress',
+          'status-completed': order.status === 'completed'
+        }">
+          <span *ngIf="order.status === 'pending'">Pendiente</span>
+          <span *ngIf="order.status === 'in-progress'">En preparación</span>
+          <span *ngIf="order.status === 'completed'">Completado</span>
+        </div>
+        <div class="order-header">
+          <h3>{{order.restaurant}}</h3>
+          <span class="order-id">{{order.id}}</span>
+        </div>
+        <div class="order-items-summary">
+          <div *ngFor="let item of order.items.slice(0, 2)">
+            {{item.quantity}}x {{item.name}}
+          </div>
+          <div *ngIf="order.items.length > 2">
+            Y {{order.items.length - 2}} artículo(s) más...
+          </div>
+        </div>
+        <div class="order-footer">
+          <div class="order-time">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Pedido: {{order.orderTime}} | Entrega est.: {{order.estimatedDelivery}}
+          </div>
+          <div class="order-total">${{order.total.toLocaleString()}}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Historial de pedidos -->
+  <section *ngIf="!selectedRestaurant" class="order-history-section">
+    <h2>Historial de Pedidos</h2>
+    <div *ngIf="orderHistory.length === 0" class="empty-state">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+      <h3>No hay pedidos anteriores</h3>
+      <p>Tus pedidos anteriores aparecerán aquí.</p>
+    </div>
+    <div class="order-history-list">
+      <div *ngFor="let order of orderHistory" class="history-order-card">
+        <div class="history-order-header">
+          <div>
+            <h3>{{order.restaurant}}</h3>
+            <span class="order-date">{{order.orderDate}}</span>
+          </div>
+          <span class="order-id">{{order.id}}</span>
+        </div>
+        <div class="history-order-items">
+          <div *ngFor="let item of order.items">
+            {{item.quantity}}x {{item.name}}
+          </div>
+        </div>
+        <div class="history-order-footer">
+          <div class="delivery-info">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Tiempo de entrega: {{order.deliveryTime}}
+          </div>
+          <div class="history-order-actions">
+            <span class="order-total">${{order.total.toLocaleString()}}</span>
+            <button class="reorder-button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+              Pedir de nuevo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Carrito de compras -->
+  <div class="cart-container" [ngClass]="{'cart-open': showCart}">
+    <div class="cart-header">
+      <h3>Carrito de Compras</h3>
+      <button class="close-cart-button" (click)="showCart = false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div *ngIf="cart.length === 0" class="empty-cart">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <p>Tu carrito está vacío</p>
+    </div>
+
+    <div *ngIf="cart.length > 0" class="cart-items">
+      <div *ngFor="let item of cart" class="cart-item">
+        <div class="cart-item-info">
+          <h4>{{item.name}}</h4>
+          <p class="cart-item-price">${{item.price.toLocaleString()}} x {{item.quantity}}</p>
+        </div>
+        <div class="cart-item-actions">
+          <button class="quantity-button" (click)="removeFromCart(item.id)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <span>{{item.quantity}}</span>
+          <button class="quantity-button" (click)="addToCart(item)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="cart.length > 0" class="cart-footer">
+      <div class="cart-total">
+        <span>Total:</span>
+        <span>${{getCartTotal().toLocaleString()}}</span>
+      </div>
+      <div class="cart-actions">
+        <button class="clear-cart-button" (click)="clearCart()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Vaciar
+        </button>
+        <button class="checkout-button" (click)="checkout()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Pagar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón flotante del carrito -->
+  <button *ngIf="cart.length > 0" class="cart-button" (click)="showCart = !showCart">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    <span class="cart-count">{{cart.length}}</span>
+  </button>
+</div>
